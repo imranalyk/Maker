@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CertiGenPro - Professional Certificate Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&family=Montserrat:wght@300;400;500&family=Roboto+Mono&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3a0ca3;
+      --accent-color: #f72585;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+      --success-color: #4cc9f0;
+    }
+    
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+    
+    .header h1 {
+      color: var(--primary-color);
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+    
+    .header p {
+      color: var(--dark-color);
+      font-size: 1.1rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .app-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+      width: 100%;
+      max-width: 1400px;
+    }
+    
+    .form-container {
+      background: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      height: fit-content;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: var(--dark-color);
+    }
+    
+    input, select, textarea {
+      width: 100%;
+      padding: 12px 15px;
+      margin: 5px 0;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-family: 'Poppins', sans-serif;
+      transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+    }
+    
+    .color-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    
+    .color-picker-container input[type="color"] {
+      width: 50px;
+      height: 50px;
+      padding: 0;
+      cursor: pointer;
+    }
+    
+    .btn {
+      background: var(--primary-color);
+      color: #fff;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    
+    .btn:hover {
+      background: var(--secondary-color);
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .btn i {
+      font-size: 1rem;
+    }
+    
+    .btn-secondary {
+      background: #6c757d;
+    }
+    
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+    
+    .certificate-preview-container {
+      position: relative;
+      width: 800px;
+      max-width: 100%;
+    }
+    
+    .certificate-preview {
+      width: 100%;
+      height: 600px;
+      background: #fff;
+      padding: 40px;
+      border: 15px solid var(--primary-color);
+      box-shadow: 0 10px 50px rgba(0,0,0,0.2);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .certificate-border {
+      position: absolute;
+      border: 2px solid var(--primary-color);
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 20px;
+      pointer-events: none;
+    }
+    
+    .certificate-logo {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      width: 80px;
+      height: 80px;
+      object-fit: contain;
+    }
+    
+    .certificate-seal {
+      position: absolute;
+      bottom: 40px;
+      right: 40px;
+      width: 100px;
+      height: 100px;
+      opacity: 0.8;
+    }
+    
+    .certificate-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-top: 60px;
+      margin-bottom: 30px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .certificate-subtitle {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
+      color: #555;
+      margin-bottom: 40px;
+    }
+    
+    .certificate-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 3rem;
+      font-weight: 600;
+      color: var(--dark-color);
+      margin: 30px 0;
+      padding: 10px 0;
+      border-top: 2px solid var(--primary-color);
+      border-bottom: 2px solid var(--primary-color);
+    }
+    
+    .certificate-text {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.2rem;
+      color: #555;
+      margin: 20px 0;
+      line-height: 1.6;
+    }
+    
+    .certificate-course {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin: 20px 0;
+    }
+    
+    .certificate-date {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 1rem;
+      color: #777;
+      margin-top: 40px;
+    }
+    
+    .certificate-signatures {
+      display: flex;
+      justify-content: space-around;
+      margin-top: 60px;
+      padding-top: 20px;
+    }
+    
+    .signature {
+      text-align: center;
+    }
+    
+    .signature-line {
+      width: 150px;
+      height: 1px;
+      background: #000;
+      margin: 0 auto 10px;
+    }
+    
+    .signature-name {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+    
+    .signature-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.8rem;
+      color: #777;
+    }
+    
+    .certificate-id {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.8rem;
+      color: #999;
+      margin-top: 20px;
+    }
+    
+    .form-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 25px;
+    }
+    
+    .footer {
+      margin-top: 50px;
+      text-align: center;
+      color: #666;
+      font-size: 0.9rem;
+      padding: 20px;
+    }
+    
+    .ad-container {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 30px;
+      text-align: center;
+      border: 1px dashed #ccc;
+    }
+    
+    /* Ad Modal Styles */
+    .ad-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    
+    .ad-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 500px;
+      text-align: center;
+      position: relative;
+    }
+    
+    .ad-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    
+    .ad-proceed-btn {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      margin-top: 20px;
+      cursor: pointer;
+    }
+
+    /* Recipient Photo Styles */
+    .recipient-photo-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+
+    .recipient-photo-preview {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary-color);
+      margin: 10px auto;
+      display: none;
+    }
+
+    .remove-photo-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 5px;
+      margin-top: 5px;
+      cursor: pointer;
+      display: none;
+    }
+    
+    @media (max-width: 1200px) {
+      .app-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .certificate-preview {
+        height: 500px;
+      }
+      
+      .certificate-name {
+        font-size: 2.5rem;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .certificate-preview {
+        height: 400px;
+        padding: 20px;
+      }
+      
+      .certificate-title {
+        font-size: 1.8rem;
+        margin-top: 40px;
+      }
+      
+      .certificate-name {
+        font-size: 2rem;
+      }
+      
+      .certificate-course {
+        font-size: 1.4rem;
+      }
+      
+      .certificate-logo {
+        width: 60px;
+        height: 60px;
+        top: 20px;
+        left: 20px;
+      }
+      
+      .certificate-seal {
+        width: 70px;
+        height: 70px;
+        bottom: 20px;
+        right: 20px;
+      }
+      
+      .ad-content {
+        width: 90%;
+        padding: 20px;
+      }
+
+      .recipient-photo-preview {
+        width: 100px;
+        height: 100px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1><i class="fas fa-certificate"></i> CertiGenPro</h1>
+    <p>Create beautiful, professional certificates in minutes. Customize every detail and download as PDF.</p>
+  </div>
+
+  <div class="app-container">
+    <div class="form-container">
+      <h2><i class="fas fa-cog"></i> Certificate Settings</h2>
+      
+      <div class="form-group">
+        <label for="name">Recipient Name</label>
+        <input type="text" id="name" placeholder="John Doe">
+      </div>
+      
+      <div class="form-group">
+        <label for="course">Achievement/Course</label>
+        <input type="text" id="course" placeholder="Advanced Web Development">
+      </div>
+      
+      <div class="form-group">
+        <label for="description">Description (Optional)</label>
+        <textarea id="description" rows="3" placeholder="For successfully completing all requirements and demonstrating exceptional skills"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label for="date">Date of Issue</label>
+        <input type="date" id="date">
+      </div>
+
+      <div class="form-group">
+        <label for="recipientPhoto">Recipient Photo (Optional)</label>
+        <input type="file" id="recipientPhoto" accept="image/*">
+        <div class="recipient-photo-container">
+          <img id="recipientPhotoPreview" class="recipient-photo-preview" src="" alt="Recipient Photo">
+          <button id="removePhotoBtn" class="remove-photo-btn"><i class="fas fa-times"></i> Remove Photo</button>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="font">Font Style</label>
+        <select id="font">
+          <option value="'Playfair Display', serif">Elegant (Playfair Display)</option>
+          <option value="'Poppins', sans-serif">Modern (Poppins)</option>
+          <option value="'Montserrat', sans-serif">Clean (Montserrat)</option>
+          <option value="'Roboto Mono', monospace">Technical (Roboto Mono)</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Certificate Colors</label>
+        <div class="color-picker-container">
+          <input type="color" id="primaryColor" value="#4361ee">
+          <span>Primary Color</span>
+        </div>
+        <div class="color-picker-container">
+          <input type="color" id="secondaryColor" value="#3a0ca3">
+          <span>Secondary Color</span>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label for="photo">Upload Logo (Optional)</label>
+        <input type="file" id="photo" accept="image/*">
+      </div>
+      
+      <div class="form-group">
+        <label for="signature1">Signature 1 (Name & Title)</label>
+        <input type="text" id="signature1" placeholder="Dr. Jane Smith, Director">
+      </div>
+      
+      <div class="form-group">
+        <label for="signature2">Signature 2 (Name & Title)</label>
+        <input type="text" id="signature2" placeholder="Prof. John Doe, Course Instructor">
+      </div>
+      
+      <div class="form-actions">
+        <button id="download-btn" class="btn"><i class="fas fa-download"></i> Download PDF</button>
+        <button id="preview-btn" class="btn btn-secondary"><i class="fas fa-eye"></i> Preview</button>
+      </div>
+      
+      <div class="ad-container">
+        <p>Advertisement Space</p>
+        <!-- AdSense or other ad code would go here -->
+      </div>
+    </div>
+
+    <div class="certificate-preview-container">
+      <div id="certificate" class="certificate-preview">
+        <div class="certificate-border"></div>
+        <img id="uploaded-photo" class="certificate-logo" src="" alt="" style="display:none">
+        <img class="certificate-seal" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='none' stroke='%234361ee' stroke-width='2'/><path d='M30,50 Q50,30 70,50 Q50,70 30,50 Z' fill='%234361ee20' stroke='%234361ee' stroke-width='1'/><circle cx='50' cy='50' r='15' fill='none' stroke='%234361ee' stroke-width='1'/><text x='50' y='52' font-family='Arial' font-size='10' text-anchor='middle' fill='%234361ee'>OFFICIAL</text></svg>" alt="Seal">
+        
+        <div id="recipientPhotoCertificate" style="display: none; margin: 0 auto 20px; width: 120px; height: 120px; border-radius: 50%; border: 3px solid var(--primary-color); overflow: hidden;">
+          <img id="recipientPhotoCertificateImg" src="" alt="Recipient Photo" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        
+        <h1 class="certificate-title">Certificate of Achievement</h1>
+        <p class="certificate-subtitle">This certificate is proudly presented to</p>
+        <h2 id="cert-name" class="certificate-name">[Recipient Name]</h2>
+        <p id="cert-text" class="certificate-text">for successfully completing all requirements and demonstrating exceptional skills in</p>
+        <h3 id="cert-course" class="certificate-course">[Course Name]</h3>
+        <p id="cert-date" class="certificate-date">Issued on: [Date]</p>
+        
+        <div class="certificate-signatures">
+          <div class="signature">
+            <div class="signature-line"></div>
+            <p id="cert-signature1" class="signature-name">[Signature 1]</p>
+            <p class="signature-title">Authorized Signature</p>
+          </div>
+          <div class="signature">
+            <div class="signature-line"></div>
+            <p id="cert-signature2" class="signature-name">[Signature 2]</p>
+            <p class="signature-title">Authorized Signature</p>
+          </div>
+        </div>
+        
+        <p class="certificate-id">Certificate ID: CG-<span id="cert-id">XXXXXX</span></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ad Modal -->
+  <div id="adModal" class="ad-modal">
+    <div class="ad-content">
+      <span class="ad-close">&times;</span>
+      <h3>Thank you for using CertiGenPro!</h3>
+      <p>Please consider supporting us by viewing this quick advertisement.</p>
+      <div class="ad-placeholder" style="background-color: #f0f0f0; padding: 20px; margin: 20px 0; border-radius: 5px;">
+        <p>Advertisement Here</p>
+        <p>This could be your ad! Contact us for advertising opportunities.</p>
+      </div>
+      <button id="proceedDownload" class="ad-proceed-btn">Proceed to Download</button>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>© 2023 CertiGenPro - Free Certificate Generator Tool | Terms of Service | Privacy Policy</p>
+  </div>
+
+  <script>
+    // DOM Elements
+    const nameInput = document.getElementById('name');
+    const courseInput = document.getElementById('course');
+    const descriptionInput = document.getElementById('description');
+    const dateInput = document.getElementById('date');
+    const fontSelect = document.getElementById('font');
+    const primaryColorInput = document.getElementById('primaryColor');
+    const secondaryColorInput = document.getElementById('secondaryColor');
+    const photoInput = document.getElementById('photo');
+    const signature1Input = document.getElementById('signature1');
+    const signature2Input = document.getElementById('signature2');
+    const recipientPhotoInput = document.getElementById('recipientPhoto');
+    const recipientPhotoPreview = document.getElementById('recipientPhotoPreview');
+    const recipientPhotoCertificate = document.getElementById('recipientPhotoCertificate');
+    const recipientPhotoCertificateImg = document.getElementById('recipientPhotoCertificateImg');
+    const removePhotoBtn = document.getElementById('removePhotoBtn');
+    
+    const certName = document.getElementById('cert-name');
+    const certCourse = document.getElementById('cert-course');
+    const certDate = document.getElementById('cert-date');
+    const certText = document.getElementById('cert-text');
+    const certPreview = document.getElementById('certificate');
+    const certTitle = document.querySelector('.certificate-title');
+    const uploadedPhoto = document.getElementById('uploaded-photo');
+    const certSignature1 = document.getElementById('cert-signature1');
+    const certSignature2 = document.getElementById('cert-signature2');
+    const certId = document.getElementById('cert-id');
+    const certificateBorder = document.querySelector('.certificate-border');
+    
+    // Ad Modal Elements
+    const adModal = document.getElementById('adModal');
+    const closeAdModal = document.querySelector('.ad-close');
+    const proceedDownloadBtn = document.getElementById('proceedDownload');
+    
+    // Generate random certificate ID
+    function generateCertId() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = '';
+      for (let i = 0; i < 6; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return result;
+    }
+    
+    // Update certificate ID on load
+    certId.textContent = generateCertId();
+    
+    // Event Listeners
+    nameInput.addEventListener('input', () => {
+      certName.textContent = nameInput.value || '[Recipient Name]';
+    });
+    
+    courseInput.addEventListener('input', () => {
+      certCourse.textContent = courseInput.value || '[Course Name]';
+    });
+    
+    descriptionInput.addEventListener('input', () => {
+      certText.textContent = descriptionInput.value || 
+        'for successfully completing all requirements and demonstrating exceptional skills in';
+    });
+    
+    dateInput.addEventListener('input', () => {
+      if (dateInput.value) {
+        const dateObj = new Date(dateInput.value);
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        certDate.textContent = 'Issued on: ' + dateObj.toLocaleDateString('en-US', options);
+      } else {
+        certDate.textContent = 'Issued on: [Date]';
+      }
+    });
+    
+    fontSelect.addEventListener('change', () => {
+      certPreview.style.fontFamily = fontSelect.value;
+    });
+    
+    primaryColorInput.addEventListener('input', () => {
+      certPreview.style.borderColor = primaryColorInput.value;
+      certificateBorder.style.borderColor = primaryColorInput.value;
+      certTitle.style.color = primaryColorInput.value;
+      certCourse.style.color = primaryColorInput.value;
+      
+      // Update seal color
+      const seal = document.querySelector('.certificate-seal');
+      const newSeal = seal.src.replace(/%23[0-9a-f]{6}/gi, '%23' + primaryColorInput.value.substring(1));
+      seal.src = newSeal;
+    });
+    
+    secondaryColorInput.addEventListener('input', () => {
+      // Can be used for other elements if needed
+    });
+    
+    photoInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onl
